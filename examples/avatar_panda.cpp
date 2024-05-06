@@ -238,7 +238,7 @@ class PTINode {
         int num = 3;
         double lambda = 1.0;
         double translation_stiffness = 1200.0;
-        double translation_damping = 2.0 * 1.0 * std::sqrt(translation_stiffness * 1.0);
+        double translation_damping = 2.0 * 0.3 * std::sqrt(translation_stiffness * 1.0);
         double rotation_stiffness = 100.0;
         double rotation_damping = 2.0 * 1.0 * std::sqrt(rotation_stiffness * 0.01);
         double torque_ratio = 0.8;
@@ -255,59 +255,61 @@ class PTINode {
         delay_cycle_current = 1;
 
         // translation part with wave variable
-        position_d += twist_d.head(3) * sample_time;
+        // Modified for diffusion policy setup
+        // position_d += twist_d.head(3) * sample_time;
 
         // position drift correction
-        actual_position_error = position_in - position_d;
-        predict_position_error = -1.0 / std::sqrt(2.0 * wave_damping) * wave_integral;
-        error_difference = predict_position_error - actual_position_error;
-        wave_correction = -1.0 * std::sqrt(2.0 * wave_damping) * (2.0 * M_PI * lambda) * error_difference;
-        for (int i = 0; i < num; i ++) {
-            if (wave_correction[i] * wave_in[i] < 0) {
-                if (std::fabs(wave_correction[i]) < std::fabs(wave_in[i])) {
-                    wave_in[i] += wave_correction[i];
-                }
-                else {
-                    wave_in[i] = 0.0;
-                }
-            }
+        // actual_position_error = position_in - position_d;
+        // predict_position_error = -1.0 / std::sqrt(2.0 * wave_damping) * wave_integral;
+        // error_difference = predict_position_error - actual_position_error;
+        // wave_correction = -1.0 * std::sqrt(2.0 * wave_damping) * (2.0 * M_PI * lambda) * error_difference;
+        // for (int i = 0; i < num; i ++) {
+        //     if (wave_correction[i] * wave_in[i] < 0) {
+        //         if (std::fabs(wave_correction[i]) < std::fabs(wave_in[i])) {
+        //             wave_in[i] += wave_correction[i];
+        //         }
+        //         else {
+        //             wave_in[i] = 0.0;
+        //         }
+        //     }
 
 
-        twist_d.head(3) = (std::sqrt(2.0 * wave_damping) * wave_in + translation_damping * twist.head(3) + \
-                        translation_stiffness * (position_relative - position_d)) / (wave_damping + translation_damping);
-        force.head(3) = translation_stiffness * (position_d - position_relative) + translation_damping * (twist_d.head(3) - twist.head(3));
-        wave_out = wave_in - std::sqrt(2.0 / wave_damping) * force.head(3);
+        // twist_d.head(3) = (std::sqrt(2.0 * wave_damping) * wave_in + translation_damping * twist.head(3) + \
+        //                 translation_stiffness * (position_relative - position_d)) / (wave_damping + translation_damping);
+        // Modified for diffusion policy setup
+        force.head(3) = translation_stiffness * (position_in - position_relative) + translation_damping * (-twist.head(3));
+        // wave_out = wave_in - std::sqrt(2.0 / wave_damping) * force.head(3);
 
-        delay_index = delay_current_index - delay_cycle_current;
-        delay_difference = delay_cycle_current - delay_cycle_previous;
-        if (delay_index < 0) {
-            delay_index += max_buff_size;
-        }
+        // delay_index = delay_current_index - delay_cycle_current;
+        // delay_difference = delay_cycle_current - delay_cycle_previous;
+        // if (delay_index < 0) {
+        //     delay_index += max_buff_size;
+        // }
 
             /* check time-varying current delay cycle */
-            if (delay_difference == 0) {
-                wave_integral[i] -= wave_history[i][delay_index] * sample_time;
-            }
-            else if (delay_difference > 0) {
-                for (int j = 1; j <= delay_difference; j ++) {
-                    if (delay_index + j >= max_buff_size) wave_integral[i] += wave_history[i][delay_index + j - max_buff_size] * sample_time;
-                    else wave_integral[i] += wave_history[i][delay_index + j] * sample_time;
-                }
-            }
-            else {
-                for (int j = 0; j < -delay_difference; j ++) {
-                    if (delay_index - j < 0) wave_integral[i] -= wave_history[i][delay_index - j + max_buff_size] * sample_time;
-                    else wave_integral[i] -= wave_history[i][delay_index - j] * sample_time;
-                }
-            }
-            wave_integral[i] += wave_out[i] * sample_time;
-            wave_history[i][delay_current_index] = wave_out[i];
-        }
-        delay_cycle_previous = delay_cycle_current;
-        delay_current_index++;
-        if (delay_current_index >= max_buff_size) {
-            delay_current_index = 0;
-        }
+        //     if (delay_difference == 0) {
+        //         wave_integral[i] -= wave_history[i][delay_index] * sample_time;
+        //     }
+        //     else if (delay_difference > 0) {
+        //         for (int j = 1; j <= delay_difference; j ++) {
+        //             if (delay_index + j >= max_buff_size) wave_integral[i] += wave_history[i][delay_index + j - max_buff_size] * sample_time;
+        //             else wave_integral[i] += wave_history[i][delay_index + j] * sample_time;
+        //         }
+        //     }
+        //     else {
+        //         for (int j = 0; j < -delay_difference; j ++) {
+        //             if (delay_index - j < 0) wave_integral[i] -= wave_history[i][delay_index - j + max_buff_size] * sample_time;
+        //             else wave_integral[i] -= wave_history[i][delay_index - j] * sample_time;
+        //         }
+        //     }
+        //     wave_integral[i] += wave_out[i] * sample_time;
+        //     wave_history[i][delay_current_index] = wave_out[i];
+        // }
+        // delay_cycle_previous = delay_cycle_current;
+        // delay_current_index++;
+        // if (delay_current_index >= max_buff_size) {
+        //     delay_current_index = 0;
+        // }
 
 
         // open loop rotation control
@@ -592,6 +594,7 @@ void PTINode::ros_run(int* status) {
 void PTINode::slow_catching(void) {
     int num = 3;
     double lambda = 10.0;
+    // Modified for diffusion policy setup
     double translation_stiffness = 3000.0;
     double translation_damping = 2.0 * 1.0 * std::sqrt(translation_stiffness * 1.0);
     double rotation_stiffness = 300.0;
