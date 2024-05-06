@@ -649,10 +649,11 @@ void panda_control(PTINode& pti, std::string type, std::string ip, int* status) 
         setDefaultBehavior(robot);
 
         // set collision behavior
-        robot.setCollisionBehavior({{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
+        robot.setCollisionBehavior(
+				{{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
                                 {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
-                                {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
-                                {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}});
+                                {{150.0, 150.0, 150.0, 150.0, 150.0, 150.0}},
+                                {{200.0, 200.0, 200.0, 200.0, 200.0, 200.0}});
         
         // set external load
         if (type == "right") {
@@ -789,9 +790,9 @@ void panda_control(PTINode& pti, std::string type, std::string ip, int* status) 
         *status = 0;
 
     } catch (franka::Exception const& e) {
+        std::cout << type << " arm error: " << std::endl;
         std::cout << e.what() << std::endl;
         *status = -1;
-        std::cout << type << " arm error, waiting for recovery..." << std::endl;
 
         // std::cout << *status << std::endl;
 
@@ -804,7 +805,7 @@ void panda_control(PTINode& pti, std::string type, std::string ip, int* status) 
             pti.th_ros_running = false;
         }
         std::cout << "All thread shut down" << std::endl;
-        
+	std::cout << "This might be caused by safety switch being turned on" << std::endl;
     }
 
 }
@@ -813,7 +814,7 @@ void panda_control(PTINode& pti, std::string type, std::string ip, int* status) 
 void arm_run(PTINode& pti, std::string type, std::string ip, int* status) {
 
     // PTINode pti(node, type);
-
+    std::cout << "Starting arm at " << ip << std::endl;
     while(!done) {
         panda_control(pti, type, ip, status);
         if (*status == 0) {
@@ -821,8 +822,7 @@ void arm_run(PTINode& pti, std::string type, std::string ip, int* status) {
             break;
         }
         else if (*status == -1) {
-            std::cout << type << " panda restarts. Pressure enter to continue" << std::endl;
-            // std::cin.ignore();
+            std::cout << type << " panda restarting...\n\n" << std::endl;
         }
         *status = 0;
     }
@@ -848,14 +848,14 @@ int main(int argc, char** argv) {
     if (std::string(argv[1]) == "left") {
         ros::init(argc, argv, "pti_interface_left", ros::init_options::NoSigintHandler);
         ros::NodeHandle node("~");
-        std::string ip = "192.168.1.101";
+        std::string ip = "10.103.1.14";
         PTINode pti(node, "left");
         arm_run(pti, "left", ip, &status);
     }
     else if (std::string(argv[1]) == "right") {
         ros::init(argc, argv, "pti_interface_right", ros::init_options::NoSigintHandler);
         ros::NodeHandle node("~");
-        std::string ip = "192.168.1.100";
+        std::string ip = "10.103.1.12";
         PTINode pti(node, "right");
         arm_run(pti, "right", ip, &status);
     }
