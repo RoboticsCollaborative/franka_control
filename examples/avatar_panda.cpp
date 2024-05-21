@@ -30,8 +30,8 @@
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/Quaternion.h"
 #include "std_msgs/Bool.h"
-#include "franka_control/PTIPacket.h"
-#include "franka_control/PInfo.h"
+#include "avatar_msgs/PTIPacket.h"
+#include "avatar_msgs/PInfo.h"
 
 volatile sig_atomic_t done = 0;
 
@@ -58,7 +58,7 @@ class PTINode {
     void publish_ptipacket();
     void publish_pinfo();
     void publish_robot_joint_state();
-    void ptipacket_callback(const franka_control::PTIPacket::ConstPtr &msg);
+    void ptipacket_callback(const avatar_msgs::PTIPacket::ConstPtr &msg);
     std::mutex mtx;
 
     bool th_nullspace_running = false;
@@ -454,8 +454,8 @@ PTINode::PTINode(ros::NodeHandle& node, std::string type): node_type(type) {
                                           node_type+"_panda_joint6", 
                                           node_type+"_panda_joint7"});
     pti_packet_sub = nh_.subscribe("/" + node_type + "_smarty_arm_output", 1, &PTINode::ptipacket_callback, this);
-    pti_packet_pub = nh_.advertise<franka_control::PTIPacket>("pti_output", 1);
-    pinfo_pub = nh_.advertise<franka_control::PInfo>("panda_info", 1);
+    pti_packet_pub = nh_.advertise<avatar_msgs::PTIPacket>("pti_output", 1);
+    pinfo_pub = nh_.advertise<avatar_msgs::PInfo>("panda_info", 1);
     robot_joint_state_pub = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
 
     ROS_INFO("Node initialized");
@@ -465,7 +465,7 @@ PTINode::PTINode(ros::NodeHandle& node, std::string type): node_type(type) {
 
 /* Publisher */
 void PTINode::publish_ptipacket() {
-    franka_control::PTIPacket packet_msg;
+    avatar_msgs::PTIPacket packet_msg;
     packet_msg.wave.resize(3);
     packet_msg.est_ext_force.resize(6);
 
@@ -501,13 +501,13 @@ void PTINode::publish_ptipacket() {
     //     if (node_type == "Right") {
     //         // ROS_ERROR_STREAM("Connection lost, trying to reconnect...");
     //         pti_packet_pub.shutdown();
-    //         pti_packet_pub = nh_.advertise<franka_control::PTIPacket>("/pti_right_output", 1);
+    //         pti_packet_pub = nh_.advertise<avatar_msgs::PTIPacket>("/pti_right_output", 1);
     //         // pti_packet_sub = nh_.subscribe("/right_smarty_arm_output", 1, &PTINode::ptipacket_callback, this, ros::TransportHints().udp());
     //     }
     //     else if (node_type == "Left") {
     //         // ROS_ERROR_STREAM("Connection lost, trying to reconnect...");
     //         pti_packet_pub.shutdown();
-    //         pti_packet_pub = nh_.advertise<franka_control::PTIPacket>("/pti_left_output", 1);
+    //         pti_packet_pub = nh_.advertise<avatar_msgs::PTIPacket>("/pti_left_output", 1);
     //         // pti_packet_sub = nh_.subscribe("/left_smarty_arm_output", 1, &PTINode::ptipacket_callback, this, ros::TransportHints().udp());
     //     }
     // }
@@ -517,7 +517,7 @@ void PTINode::publish_ptipacket() {
 }
 
 void PTINode::publish_pinfo() {
-    franka_control::PInfo info_msg;
+    avatar_msgs::PInfo info_msg;
     info_msg.external_load_mass = std::max((est_ext_force[2] - 9.0) / 10.0, 0.0);
     info_msg.slow_catching_index = slow_catching_flag;
     pinfo_pub.publish(info_msg);
@@ -540,7 +540,7 @@ void PTINode::publish_robot_joint_state() {
 }
 
 /* Subscriber callback */
-void PTINode::ptipacket_callback(const franka_control::PTIPacket::ConstPtr &packet_msg) {
+void PTINode::ptipacket_callback(const avatar_msgs::PTIPacket::ConstPtr &packet_msg) {
 
     // mtx.lock();
     Eigen::Vector3d wave_in_unfiltered;

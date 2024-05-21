@@ -1,2 +1,0 @@
-float64 external_load_mass
-int32 slow_catching_index

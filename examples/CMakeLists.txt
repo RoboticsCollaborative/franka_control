@@ -44,19 +44,18 @@ set(EXAMPLES
   # print_joint_poses
   # vacuum_object
   cartesian_impedance_teleop
-  two_arm_teleop
+  # two_arm_teleop
   avatar_panda
 )
 
 foreach(example ${EXAMPLES})
   add_executable(${example} ${example}.cpp)
   target_link_libraries(${example} Franka::Franka examples_common Eigen3::Eigen ${catkin_LIBRARIES})
-  add_dependencies(${example} ${${example}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} franka_control_generate_messages)
+  add_dependencies(${example} ${${example}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 endforeach()
 
 # target_link_libraries(joint_impedance_control Threads::Threads)
 target_link_libraries(cartesian_impedance_teleop Threads::Threads)
-target_link_libraries(two_arm_teleop Threads::Threads)
 target_link_libraries(avatar_panda Threads::Threads)
 # target_link_libraries(motion_with_control Poco::Foundation)
 

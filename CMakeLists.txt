@@ -12,22 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   sensor_msgs
-  message_generation
-)
-
-add_message_files(
-  DIRECTORY
-  msg
-  FILES
-  PTIPacket.msg
-  PInfo.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  sensor_msgs
-  geometry_msgs
+  avatar_msgs
 )
 
 ###################################
@@ -54,7 +39,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+ include
   ${catkin_INCLUDE_DIRS}
 )
 
