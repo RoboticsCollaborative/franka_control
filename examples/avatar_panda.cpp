@@ -495,6 +495,7 @@ void PTINode::publish_ptipacket() {
     packet_msg.position_d.x = position_d[0];
     packet_msg.position_d.y = position_d[1];
     packet_msg.position_d.z = position_d[2];
+    packet_msg.header.stamp = ros::Time::now();
 
     // if (pti_packet_pub.getNumSubscribers() == 0) {
     //     if (node_type == "Right") {
@@ -679,10 +680,12 @@ void panda_control(PTINode& pti, std::string type, std::string ip, int* status) 
         // First move the robot to a suitable joint configuration
         std::array<double, 7> q_goal;
         if (type == "right") {
-            q_goal = std::array<double, 7>{{0.0, 0.0, 0.0, -2.7, 1.5708, 1.5708, -2.0}};
+            // q_goal = std::array<double, 7>{{0.0, 0.0, 0.0, -2.7, 1.5708, 1.5708, -2.0}};
+            q_goal = std::array<double, 7>{{0.0, 0.5, 0.0, -2.0, 1.5708, 1.5708, -1.65}};
         }
         else if (type == "left") {
-            q_goal = std::array<double, 7>{{0.0, 0.0, 0.0, -2.7, -1.5708, 1.5708, 0.4}};
+            // q_goal = std::array<double, 7>{{0.0, 0.0, 0.0, -2.7, -1.5708, 1.5708, 0.4}};
+            q_goal = std::array<double, 7>{{0.0, 0.5, 0.0, -2.0, -1.5708, 1.5708, 0.15}};
         }
         MotionGenerator motion_generator(0.3, q_goal);
         std::cout << "WARNING: " << type << " arm starts moving."
@@ -727,6 +730,7 @@ void panda_control(PTINode& pti, std::string type, std::string ip, int* status) 
                 return franka::MotionFinished(zero_torques);
             }
             pti.robotStateUpdate(model, robot_state);
+            // std::cout << pti.q << std::endl;
             pti.jointLimit(type);
             pti.slow_catching();
 

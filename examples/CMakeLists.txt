@@ -51,7 +51,7 @@ set(EXAMPLES
 foreach(example ${EXAMPLES})
   add_executable(${example} ${example}.cpp)
   target_link_libraries(${example} Franka::Franka examples_common Eigen3::Eigen ${catkin_LIBRARIES})
-  add_dependencies(${example} ${${example}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+  add_dependencies(${example} ${${example}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} franka_control_generate_messages)
 endforeach()
 
 # target_link_libraries(joint_impedance_control Threads::Threads)
