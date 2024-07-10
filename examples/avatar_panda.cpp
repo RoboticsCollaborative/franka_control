@@ -474,7 +474,7 @@ void PTINode::publish_ptipacket() {
     for (int i = 0; i < 3; i ++) {
         packet_msg.wave[i] = wave_out[i];
     }
-    for (int i = 0; i < 3; i ++) {
+    for (int i = 0; i < 6; i ++) {
         packet_msg.est_ext_force[i] = est_ext_force[i];
     }
     packet_msg.position.x = position_relative[0];
