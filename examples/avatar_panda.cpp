@@ -92,6 +92,7 @@ class PTINode {
     Eigen::Vector3d position;
     Eigen::Vector3d position_d;
     Eigen::Quaterniond orientation;
+    Eigen::Quaterniond orientation_relative;
     Eigen::Vector3d position_relative;
     Eigen::Vector3d quat_error;
     Eigen::Matrix<double, 6, 1> twist;
@@ -217,7 +218,6 @@ class PTINode {
         orientation = transform.linear();
         position_relative = position - position_0;
 
-        Eigen::Quaterniond orientation_relative;
         Eigen::Vector3d quat_error_local;
         if (orientation_0.coeffs().dot(orientation.coeffs()) < 0.0) {
             orientation.coeffs() << -orientation.coeffs();
@@ -294,7 +294,7 @@ class PTINode {
         //         for (int j = 1; j <= delay_difference; j ++) {
         //             if (delay_index + j >= max_buff_size) wave_integral[i] += wave_history[i][delay_index + j - max_buff_size] * sample_time;
         //             else wave_integral[i] += wave_history[i][delay_index + j] * sample_time;
-        //         }
+        //         }orientation_relative
         //     }
         //     else {
         //         for (int j = 0; j < -delay_difference; j ++) {
@@ -480,6 +480,10 @@ void PTINode::publish_ptipacket() {
     packet_msg.position.x = position_relative[0];
     packet_msg.position.y = position_relative[1];
     packet_msg.position.z = position_relative[2];
+    packet_msg.quat.x = -orientation_relative.x();
+    packet_msg.quat.y = -orientation_relative.y();
+    packet_msg.quat.z = -orientation_relative.z();
+    packet_msg.quat.w = orientation_relative.w();
     packet_msg.angle.x = -quat_error[0];
     packet_msg.angle.y = -quat_error[1];
     packet_msg.angle.z = -quat_error[2];
